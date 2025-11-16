@@ -42,6 +42,19 @@ except ImportError:
     FLASK_AVAILABLE = False
     print("Flask not available - will run in polling mode only")
 
+    # +++ এই কোডটুকু যোগ করুন +++
+if FLASK_AVAILABLE:
+    app = Flask(__name__)
+else:
+    app = None
+
+if app:
+    @app.route('/')
+    def health_check():
+        """Render health check endpoint."""
+        return jsonify({"status": "healthy", "message": "JHON VIP BOT is running!"}), 200
+    #END=======
+
 # -------------------------
 # Config — edit or set .env
 # -------------------------
@@ -1589,10 +1602,33 @@ def main():
     app.run_polling(close_loop=False)
 
 
+# ... (existing code before if __name__ == "__main__":)
+
+# +++ নিচের সম্পূর্ণ ব্লকটি দিয়ে পুরনোটি Replace করুন +++
 if __name__ == "__main__":
+    
+    # Start the web server in a separate thread
+    if FLASK_AVAILABLE and app:
+        logger.info("Starting Flask web server for health checks...")
+        # Render এর জন্য PORT সেট করা
+        port = int(os.environ.get("PORT", 10000))
+        
+        def run_web_server():
+            try:
+                # Flask এর নিজস্ব সার্ভার ব্যবহার করা
+                app.run(host="0.0.0.0", port=port, debug=False)
+            except Exception as e:
+                logger.error(f"Flask server failed: {e}")
+
+        # ওয়েব সার্ভারটি একটি আলাদা থ্রেডে চালু করা
+        web_thread = Thread(target=run_web_server, daemon=True)
+        web_thread.start()
+    
+    # এটি আপনার বটের মূল লুপ, এটি আগের মতোই থাকবে
     while True:
         try:
-            main()
+            main() # main() ফাংশনটি আপনার বটটি চালু করবে
         except Exception as e:
             logger.exception("Bot crashed — restarting in 5s...")
             time.sleep(5)
+# +++ এই পর্যন্ত +++
