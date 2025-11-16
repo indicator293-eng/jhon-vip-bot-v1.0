@@ -1,4 +1,5 @@
-# bot.py — Merged single-file BD Trader Bot (UPDATED v2)
+#!/usr/bin/env python3
+# bot.py — Merged single-file BD Trader Bot (UPDATED v2 - Web Service Compatible)
 # Keep this file UTF-8 encoded.
 from __future__ import annotations
 import asyncio
@@ -10,6 +11,7 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from threading import Thread
 
 import pandas as pd
 import websockets
@@ -32,15 +34,23 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
+# Flask for web service (Render requirement)
+try:
+    from flask import Flask, jsonify
+    FLASK_AVAILABLE = True
+except ImportError:
+    FLASK_AVAILABLE = False
+    print("Flask not available - will run in polling mode only")
+
 # -------------------------
 # Config — edit or set .env
 # -------------------------
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8437112996:AAFS1PCIMC-arxSpCLdqA5FCckOiXTbmDVg").strip()
+BOT_TOKEN = os.getenv("BOT_TOKEN", "7972983089:AAEN2kvyMR6kLAqqU-c_h1xAMSugbd5KqTA").strip()
 DERIV_APP_ID = os.getenv("DERIV_APP_ID", "1089").strip()
 OWNER_CONTACT = os.getenv("OWNER_CONTACT", "@emonjohn744").strip()
-raw_admins = os.getenv("ADMIN_IDS", "7529660852,5113279129").strip()
+raw_admins = os.getenv("ADMIN_IDS", "7529660852").strip()
 ADMIN_IDS = set()
 for part in raw_admins.split(","):
     part = part.strip()
@@ -543,7 +553,7 @@ def build_signal_text(pair: str, tf: str, row: pd.Series, signal: str | None, co
     # Build message
     lines = [
         "═══════════════════════════",
-        "⚡ JHON LIVE SIGNAL BOT  ⚡",
+        "⚡ JHON VIP BOT SIGNAL ⚡",
         "═══════════════════════════",
         "",
         f"{signal_emoji} SIGNAL: {stype}",
@@ -697,7 +707,7 @@ def require_auth_and_channel(func):
 async def send_welcome_message(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
     msg = (
         "═══════════════════════════\n"
-        "🌟 WELCOME TO JHON VIP BOT🌟\n"
+        "🌟 WELCOME TO JHON VIP BOT 🌟\n"
         "═══════════════════════════\n\n"
         "⚡ Your Elite Trading Companion! ⚡\n\n"
         "🎯 FEATURES:\n"
@@ -1155,7 +1165,7 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def about_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         "═══════════════════════════\n"
-        "ℹ️ ABOUT JHON VIP BOT\n"
+        "ℹ️ ABOUT JHON VIP BOT BOT\n"
         "═══════════════════════════\n\n"
         "🤖 TECHNOLOGY:\n"
         "✅ AI-Powered Signal Engine\n"
